@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--suppress HtmlRequiredTitleElement -->
+<head>
+<% include partials/head_css.ejs %>
+</head>
+<body class="animsition">
+<div class="page-wrapper">
+<% include partials/header_mobile.ejs %>
+<% include partials/menu_sidebar.ejs %>
+<!-- PAGE CONTAINER-->
+<div class="page-container">
+<% include partials/header_desktop.ejs %>
+<!-- MAIN CONTENT-->
+<div class="main-content">
+<div class="section__content section__content--p30">
+<div class="container-fluid">
+<div class="col-lg-12 col-md-12">
+<h2 class="title-1 m-b-25 animated fadeInDown">Your Environments</h2>
+<div class="row">
+<div class="col-md-12">
+<div class="row">
+<div class="col-lg-12 shadow p-3 mb-5 bg-white rounded">
+<div class="card-body">
+<div class="default-tab">
+<nav>
+<div class="nav nav-tabs" id="nav-tab" role="tablist">
+<a class="nav-item nav-link active" id="nav-home-tab"
+data-toggle="tab" href="#nav-home" role="tab"
+aria-controls="nav-home"
+aria-selected="true">VPC</a>
+<a class="nav-item nav-link" id="nav-profile-tab"
+data-toggle="tab" href="#nav-profile" role="tab"
+aria-controls="nav-profile"
+aria-selected="false">Server</a>
+</div>
+</nav>
+<div class="tab-content pl-3 pt-2" id="nav-tabContent">
+<br>
+<div class="tab-pane fade show active" id="nav-home"
+role="tabpanel"
+aria-labelledby="nav-home-tab">
+<!----------------------------->
+<form action="" method="post" class="form-horizontal">
+<div class="row form-group">
+<div class="col col-md-3">
+<label for="hf-email" class=" form-controllabel">
+VPC</label>
+</div>
+<div class="col-12 col-md-9">
+<input type="name" id="hf-email" name="hf-email"
+placeholder="Enter VPC Name"
+class="form-control">
+</div>
+</div>
+<div class="row form-group">
+<div class="col col-md-3">
+<label for="hf-email" class=" form-control-label">Public
+Subnet</label>
+</div>
+<div class="col-12 col-md-9">
+<input type="name" id="hf-email" name="hf-email"
+placeholder="Enter no. of Public Subnets"
+class="form-control">
+</div>
+</div>
+<div class="row form-group">
+<div class="col col-md-3">
+<p>Add Private Subnets?</p>
+</div>
+<div class="col-12 col-md-9">
+<label class="switch switch-3d switch-primary mr-2">
+<input type="radio" class="switch-input"
+id="chkSubnet" Unchecked>
+<span class="switch-label"></span>
+<span class="switch-handle"></span>
+</label>
+</div>
+</div>
+<div class="row form-group" id="pvtSubnet">
+<div class="col col-md-3">
+<label for="hf-email" class=" form-control-label">Private
+Subnet</label>
+</div>
+<div class="col-12 col-md-9">
+<input type="name" id="hf-email" name="hf-email"
+placeholder="Enter no. of Private Subnets"
+class="form-control">
+</div>
+</div>
+<a href="#nav-profile" class="float-right">
+<button class="btn btn-primary float-right">Next
+</button>
+</a>
+</form>
+<!----------------------------->
+</div>
+<div class="tab-pane fade" id="nav-profile" role="tabpanel"
+aria-labelledby="nav-profile-tab">
+<div class="row form-group">
+<div class="col col-md-3">
+<label for="hf-email" class=" form-control-label">No. of
+Instances</label>
+</div>
+<div class="col-12 col-md-9">
+<input type="name" id="hf-email" name="hf-email"
+placeholder="Enter No. of Instances"
+class="form-control">
+</div>
+</div>
+<div class="row form-group">
+<div class="col col-md-3">
+<label class=" form-control-label">Memory</label>
+</div>
+<div class="col col-md-9">
+<div class="form-check">
+<div class="checkbox">
+<label for="checkbox1"
+class="form-check-label ">
+<input type="checkbox" id="checkbox1"
+name="checkbox1" value="0.5 GB"
+class="form-check-input">0.5 GB
+</label>
+</div>
+<div class="checkbox">
+<label for="checkbox2"
+class="form-check-label ">
+<input type="checkbox" id="checkbox2"
+name="checkbox2" value="1 GB"
+class="form-check-input"> 1 GB
+</label>
+</div>
+<div class="checkbox">
+<label for="checkbox3"
+class="form-check-label ">
+<input type="checkbox" id="checkbox3"
+name="checkbox3" value="2 GB"
+class="form-check-input"> 2 GB
+</label>
+</div>
+<div class="checkbox">
+<label for="checkbox4"
+class="form-check-label ">
+<input type="checkbox" id="checkbox4"
+name="checkbox4" value="4 GB"
+class="form-check-input"> 4 GB
+</label>
+</div>
+</div>
+
+</div>
+</div>
+<div class="row form-group">
+<div class="col col-md-3">
+<label for="hf-email" class=" form-controllabel">
+Storage</label>
+</div>
+<div class="col-12 col-md-9">
+<input type="name" id="hf-email" name="hf-email"
+placeholder="Enter amount of storage you want"
+class="form-control">
+</div>
+</div>
+<a href="#nav-profile" class="float-right">
+<button class="btn btn-primary float-right">Next</button>
+</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!--- Action Second Section End (More Functionality can be added here, if we extend this
+project)---->
+<div class="row">
+<div class="col-md-12">
+<div class="copyright">
+<p>Developed by Team Clustroit | TCS Inframind Contest</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- END MAIN CONTENT-->
+<!-- END PAGE CONTAINER-->
+</div>
+</div>
+<% include partials/bottom_js_scripts.ejs %>
+<!-- Main JS-->
+<script src="/js/main.js"></script>
+</body>
+</html>
+<!-- end document-->
+

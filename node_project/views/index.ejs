@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--suppress HtmlRequiredTitleElement -->
+<head>
+<% include partials/head_css.ejs %>
+</head>
+<body class="animsition">
+<div class="page-wrapper">
+<% include partials/header_mobile.ejs %>
+<% include partials/menu_sidebar.ejs %>
+<!-- PAGE CONTAINER-->
+<div class="page-container">
+<% include partials/header_desktop.ejs %>
+<!-- MAIN CONTENT-->
+<div class="main-content">
+<div class="section__content section__content--p30">
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-12">
+<div class="overview-wrap">
+<h2 class="title-1 animated fadeInDown">overview</h2>
+</div>
+</div>
+</div>
+<div class="row m-t-25">
+<div class="col-sm-6 col-md-4 animated fadeIn">
+<a href="/custom_env">
+<div class="overview-item overview-item--c1 animated fadeInDown">
+<div class="overview__inner">
+<div class="overview-box clearfix text-center fun_box">
+<div class="icon">
+<img class="img-responsive"
+style="margin-bottom:20px; width:72px; height:70px;"
+src="/images/cloud-computing.png">
+</div>
+<div class="text">
+<h2>Launch a Custom Environment</h2>
+</div>
+</div>
+</div>
+</div>
+</a>
+</div>
+<div class="col-sm-6 col-md-4 animated fadeIn">
+<div class="overview-item overview-item--c2 animated fadeInUp">
+synergy/views/index.ejs
+14
+<div class="overview__inner">
+<div class="overview-box clearfix text-center fun_box ">
+<div class="icon">
+<img class="img-responsive"
+style="margin-bottom:22px; width:67px; height:67px;"
+src="/images/cloud-network.png">
+</div>
+<div class="text">
+<h2>Create a Template</h2><br>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="col-sm-6 col-md-4 animated fadeIn">
+<a href="/launchstack">
+<div class="overview-item overview-item--c3 animated fadeInDown">
+<div class="overview__inner">
+<div class="overview-box clearfix text-center fun_box">
+<div class="icon">
+<img class="img-responsive"
+style="margin-bottom:20px; width:70px; height:70px;"
+src="/images/file.png">
+</div>
+<div class="text">
+<h2>Launch from existing Template</h2>
+</div>
+</div>
+</div>
+</div>
+</a>
+</div>
+</div>
+<!---- Action First End (More Functionality can be added here, if we extend this project)----->
+<br>
+<div class="col-lg-12 col-md-12">
+<h2 class="title-1 m-b-25 animated fadeInDown">Your Environments</h2>
+<div class="row">
+<div class="col-md-12">
+<div class="row">
+<div class="col-lg-12 shadow p-3 mb-5 bg-white rounded">
+<div class="table-responsive table-data">
+<table class="table">
+<thead>
+<tr>
+<td>Name</td>
+<td>ID</td>
+<td>Web Servers</td>
+<td>DB Servers</td>
+<td>Launch Time</td>
+synergy/views/index.ejs
+15
+<td>Status</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<div class="table-data__info">
+<h6>TCS</h6>
+</div>
+</td>
+<td>78456598</td>
+<td>2</td>
+<td>1</td>
+<td>December 22, 2018 at 11:50 PM</td>
+<td>
+<span class="role member">Deployed</span>
+</td>
+</tr>
+<tr>
+<td>
+<div class="table-data__info">
+<h6>Clustroit</h6>
+</div>
+</td>
+<td>54698754</td>
+<td>4</td>
+<td>1</td>
+<td>December 21, 2018 at 12:30 PM</td>
+<td>
+<span class="role admin">Deleted </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<br>
+<h2 class="title-1 m-b-25 animated fadeInDown">Quick Analytics</h2>
+<div class="row">
+<div class="col-lg-6">
+<div class="au-card m-b-30">
+<div class="au-card-inner">
+<h3 class="title-2 m-b-40">Usage Stats</h3>
+<canvas id="pieChart"></canvas>
+</div>
+</div>
+synergy/views/index.ejs
+16
+</div>
+<div class="col-lg-6">
+<div class="au-card m-b-30">
+<div class="au-card-inner">
+<h3 class="title-2 m-b-40">Expected Bill</h3>
+<canvas id="singelBarChart"></canvas>
+<br>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!--- Action Second Section End (More Functionality can be added here, if we extend this
+project)---->
+<div class="row">
+<div class="col-md-12">
+<div class="copyright">
+<p>Developed by Team Clustroit | TCS Inframind Contest</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- END MAIN CONTENT-->
+<!-- END PAGE CONTAINER-->
+</div>
+<% include partials/bottom_js_scripts.ejs %>
+<!-- Main JS-->
+<script src="/js/main.js"></script>
+</body>
+</html>
+<!-- end document-->
+synergy/views/index.

@@ -1,0 +1,714 @@
+$(document).ready(refreshTable());
+{
+"AWSTemplateFormatVersion": "2010-09-09",
+"Description": "Synergy template with Load balancer ,2 web servers and 1 db server in a vpc ",
+"Parameters": {},
+"Conditions" : {
+},
+"Mappings" : {
+"AWSInstanceType2Arch" : {
+"t2.nano" : { "Arch" : "HVM64" },
+"t2.micro" : { "Arch" : "HVM64" },
+"t2.small" : { "Arch" : "HVM64" },
+"t2.medium" : { "Arch" : "HVM64" },
+"t2.large" : { "Arch" : "HVM64" }
+},
+"AWSInstanceType2NATArch" : {
+"t2.nano" : { "Arch" : "NATHVM64" },
+"t2.micro" : { "Arch" : "NATHVM64" },
+"t2.small" : { "Arch" : "NATHVM64" },
+"t2.medium" : { "Arch" : "NATHVM64" },
+"t2.large" : { "Arch" : "NATHVM64" }
+},
+"AWSRegionArch2AMI" : {
+"ap-southeast-1" : { "HVM64" : "ami-a69b49c5"},
+"ap-south-1" : { "HVM64" : "ami-fdbed492"}
+}
+},
+"Resources": {
+"ALBListener" : {
+"DependsOn":
+["SynergyPublicSubnet","sgAllowsHTTPandHTTPS","SynergyVPC","PublicSubnet","WebServer1","W
+ebServer2","DbServer","ApplicationLoadBalancerELB"],
+"Type" : "AWS::ElasticLoadBalancingV2::Listener",
+"Properties" : {
+"DefaultActions" : [{
+"Type" : "forward",
+"TargetGroupArn" : { "Ref" : "ALBTargetGroup" }
+}],
+"LoadBalancerArn" : { "Ref" : "ApplicationLoadBalancerELB" },
+"Port" : "80",
+"Protocol" : "HTTP”
+}
+},
+"ApplicationLoadBalancerELB" : {
+"DependsOn":
+["SynergyPublicSubnet","sgAllowsHTTPandHTTPS","SynergyVPC","PublicSubnet","WebServer1","W
+ebServer2","DbServer","ALBTargetGroup"],
+"Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer",
+"Properties" : {
+"Scheme" : "internet-facing",
+"Subnets" : [ {"Ref" : "PublicSubnet"}, {"Ref" : "SynergyPublicSubnet"}],
+"SecurityGroups" : [{"Ref": "sgAllowsHTTPandHTTPS"}]
+}
+},
+"ALBTargetGroup" : {
+"DependsOn":
+["SynergyPublicSubnet","sgAllowsHTTPandHTTPS","SynergyVPC","PublicSubnet","WebServer1","W
+ebServer2","DbServer"],
+"Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+"Properties" : {
+"HealthCheckIntervalSeconds" : 60,
+"UnhealthyThresholdCount" : 10,
+"HealthCheckPath" : "/",
+"Name" : "WebServersTargetGroup",
+"Port" : 80,
+"Protocol" : "HTTP",
+"VpcId" : { "Ref": "SynergyVPC" },
+"Targets": [{ "Id": {"Ref" : "WebServer1"}, "Port": 80 }, { "Id": {"Ref" : "WebServer2"}, "Port": 80 }]
+}
+},
+"WebServer1" : {
+"Type" : "AWS::EC2::Instance",
+"DependsOn": ["SynergyPublicSubnet","SynergyVPC"],
+"Properties": {
+"Tags": [{"Key": "Name","Value": "WebServer1"}],
+"ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+{ "Fn::FindInMap" : [ "AWSInstanceType2Arch", "t2.micro", "Arch" ] } ] },
+"InstanceType" : "t2.micro",
+"SecurityGroupIds" : [ {"Ref" : "sgAllowSSH"},{"Ref": "sgAllowsHTTPandHTTPS" } ],
+"UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+"#!/bin/bash -ex\n",
+"yum -y update\n",
+"yum -y install httpd php mysql php-mysql\n",
+"chkconfig httpd on\n",
+"/etc/init.d/httpd start\n",
+"if [ ! -f /var/www/html/lab2-app.tar.gz ]; then\n",
+"cd /var/www/html\n",
+"wget https://us-west-2-aws-training.s3.amazonaws.com/awsu-ilt/AWS-100-ESS/v4.1/lab-2-
+configure-website-datastore/scripts/lab2-app.tar.gz\n",
+"tar xvfz lab2-app.tar.gz\n",
+"chown apache:root /var/www/html/rds.conf.php\n",
+“fi\n"
+]]}},
+"KeyName" : "SynergyKey",
+"SubnetId": {"Ref": "SynergyPublicSubnet"}
+}
+},
+"WebServer2" : {
+"Type" : "AWS::EC2::Instance",
+"DependsOn": ["PublicSubnet","SynergyVPC"],
+"Properties": {
+"Tags": [
+{
+"Key": "Name",
+“Value": "WebServer2"
+}
+],
+"ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+{ "Fn::FindInMap" : [ "AWSInstanceType2Arch", "t2.micro", "Arch" ] } ] },
+"InstanceType" : "t2.micro",
+"SecurityGroupIds" : [ {"Ref" : "sgAllowSSH"},{"Ref": "sgAllowsHTTPandHTTPS" } ],
+"UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+"#!/bin/bash -ex\n",
+"yum -y update\n",
+"yum -y install httpd php mysql php-mysql\n",
+"chkconfig httpd on\n",
+"/etc/init.d/httpd start\n",
+"if [ ! -f /var/www/html/lab2-app.tar.gz ]; then\n",
+"cd /var/www/html\n",
+"wget https://us-west-2-aws-training.s3.amazonaws.com/awsu-ilt/AWS-100-ESS/v4.1/lab-2-
+configure-website-datastore/scripts/lab2-app.tar.gz\n",
+"tar xvfz lab2-app.tar.gz\n",
+"chown apache:root /var/www/html/rds.conf.php\n",
+“fi\n"
+]]}},
+"KeyName" : "SynergyKey",
+"SubnetId": {"Ref": "PublicSubnet"}
+}
+},
+"DbServer" : {
+"Type" : "AWS::EC2::Instance",
+"DependsOn": ["SynergyPublicSubnet","SynergyVPC"],
+"Properties": {
+"Tags": [
+{
+"Key": "Name",
+“Value": "DatabaseServer"
+}
+],
+"ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+{ "Fn::FindInMap" : [ "AWSInstanceType2Arch", "t2.micro", "Arch" ] } ] },
+"InstanceType" : "t2.micro",
+"SecurityGroupIds" : [ {"Ref": "sgSSHandDatabaseSG" } ],
+"UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+"#!/bin/bash -ex\n",
+"yum -y update\n",
+"yum -y install httpd php mysql php-mysql\n",
+"chkconfig httpd on\n",
+"/etc/init.d/httpd start\n",
+"if [ ! -f /var/www/html/lab2-app.tar.gz ]; then\n",
+"cd /var/www/html\n",
+"wget https://us-west-2-aws-training.s3.amazonaws.com/awsu-ilt/AWS-100-ESS/v4.1/lab-2-
+configure-website-datastore/scripts/lab2-app.tar.gz\n",
+"tar xvfz lab2-app.tar.gz\n",
+"chown apache:root /var/www/html/rds.conf.php\n",
+“fi\n"
+]]}},
+"KeyName" : "SynergyKey",
+"SubnetId": {"Ref": "SynergyPublicSubnet"}
+}
+},
+"SynergyVPC": {
+"Type": "AWS::EC2::VPC",
+"Properties": {
+"CidrBlock": "10.0.0.0/16",
+"InstanceTenancy": "default",
+"EnableDnsSupport": "true",
+"EnableDnsHostnames": "false",
+"Tags": [
+{
+"Key": "Name",
+“Value": "SynergyVPC"
+}
+]
+}
+},
+"SynergyPrivateSubnet": {
+"Type": "AWS::EC2::Subnet",
+"Properties": {
+"CidrBlock": "10.0.2.0/24",
+"MapPublicIpOnLaunch": "true",
+"AvailabilityZone": "ap-southeast-1a",
+"VpcId": {
+“Ref": "SynergyVPC"
+},
+"Tags": [
+{
+"Key": "Name",
+“Value": "SynergyPrivateSubnet"
+}
+]
+}
+},
+"PrivateSubnet": {
+"Type": "AWS::EC2::Subnet",
+"Properties": {
+"MapPublicIpOnLaunch": "true",
+"CidrBlock": "10.0.4.0/24",
+"AvailabilityZone": "ap-southeast-1b",
+"VpcId": {
+“Ref": "SynergyVPC"
+},
+"Tags": [
+{
+"Key": "Name",
+“Value": "PrivateSubnet"
+}
+]
+}
+},
+"PublicSubnet": {
+"Type": "AWS::EC2::Subnet",
+"Properties": {
+"CidrBlock": "10.0.3.0/24",
+"MapPublicIpOnLaunch": "true",
+"AvailabilityZone": "ap-southeast-1b",
+"VpcId": {
+“Ref": "SynergyVPC"
+},
+"Tags": [
+{
+"Key": "Name",
+“Value": "PublicSubnet"
+}
+]
+}
+},
+"SynergyPublicSubnet": {
+"Type": "AWS::EC2::Subnet",
+"Properties": {
+"CidrBlock": "10.0.1.0/24",
+"MapPublicIpOnLaunch": "true",
+"AvailabilityZone": "ap-southeast-1a",
+"VpcId": {
+“Ref": "SynergyVPC"
+},
+"Tags": [
+{
+"Key": "Name",
+“Value": "SynergyPublicSubnet"
+}
+]
+}
+},
+"SynergyInternetGateway": {
+"Type": "AWS::EC2::InternetGateway",
+"Properties": {
+"Tags": [
+{
+"Key": "Name",
+“Value": "SynergyInternetGateway"
+}
+]
+}
+},
+"SynergyVpcDHCP": {
+"Type": "AWS::EC2::DHCPOptions",
+"Properties": {
+"Tags": [
+
+{
+"Key": "Name",
+“Value": "SynergyVpcDHCP"
+}
+],
+"DomainName": "ap-southeast-1.compute.internal",
+"DomainNameServers": [
+"AmazonProvidedDNS”
+]
+}
+},
+"PrivateRouteTable": {
+"Type": "AWS::EC2::RouteTable",
+"Properties": {
+"VpcId": {
+“Ref": "SynergyVPC"
+},
+"Tags": [
+{
+"Key": "Network",
+“Value": "Private"
+},
+{
+"Key": "Name",
+“Value": "PrivateRouteTable"
+}
+]
+}
+},
+"PublicRouteTable": {
+"Type": "AWS::EC2::RouteTable",
+"Properties": {
+"VpcId": {
+“Ref": "SynergyVPC"
+},
+"Tags": [
+{
+"Key": "Network",
+“Value": "Public"
+},
+{
+"Key": "Name",
+“Value": "PublicRouteTable"
+}
+]
+}
+
+},
+"sgAllowSSH": {
+"Type": "AWS::EC2::SecurityGroup",
+"Properties": {
+"GroupDescription": "Let it use SSH",
+"VpcId": {
+“Ref": "SynergyVPC"
+},
+"Tags": [
+{
+"Key": "Name",
+“Value": "AllowSSH"
+}
+]
+}
+},
+"sgAllowsHTTPandHTTPS": {
+"Type": "AWS::EC2::SecurityGroup",
+"Properties": {
+"GroupDescription": "Allows Http and Https traffic",
+"VpcId": {
+“Ref": "SynergyVPC"
+},
+"Tags": [
+{
+"Key": "Name",
+“Value": "AllowWebAccess"
+}
+]
+}
+},
+"sgSSHandDatabaseSG": {
+"Type": "AWS::EC2::SecurityGroup",
+"Properties": {
+"GroupDescription": "Database access",
+"VpcId": {
+“Ref": "SynergyVPC"
+}
+}
+},
+"sgdefault": {
+
+"Type": "AWS::EC2::SecurityGroup",
+"Properties": {
+"GroupDescription": "default VPC security group",
+"VpcId": {
+“Ref": "SynergyVPC"
+},
+"Tags": [
+{
+"Key": "Name",
+“Value": "DefaultSG"
+}
+]
+}
+},
+"SynergySingleNACL": {
+"Type": "AWS::EC2::NetworkAcl",
+"Properties": {
+"VpcId": {
+“Ref": "SynergyVPC"
+},
+"Tags": [
+{
+"Key": "Name",
+“Value": "SynergySingleNACL"
+}
+]
+}
+},
+"acl1": {
+"Type": "AWS::EC2::NetworkAclEntry",
+"Properties": {
+"CidrBlock": "0.0.0.0/0",
+"Egress": "true",
+"Protocol": "-1",
+"RuleAction": "allow",
+"RuleNumber": "100",
+"NetworkAclId": {
+“Ref": "SynergySingleNACL"
+}
+}
+},
+"acl2": {
+"Type": "AWS::EC2::NetworkAclEntry",
+"Properties": {
+"CidrBlock": "0.0.0.0/0",
+
+"Protocol": "-1",
+"RuleAction": "allow",
+"RuleNumber": "100",
+"NetworkAclId": {
+“Ref": "SynergySingleNACL"
+}
+}
+},
+"gw1": {
+"Type": "AWS::EC2::VPCGatewayAttachment",
+"Properties": {
+"VpcId": {
+“Ref": "SynergyVPC"
+},
+"InternetGatewayId": {
+“Ref": "SynergyInternetGateway"
+}
+}
+},
+"subnetroute1": {
+"Type": "AWS::EC2::SubnetRouteTableAssociation",
+"Properties": {
+"RouteTableId": {
+“Ref": "PrivateRouteTable"
+},
+"SubnetId": {
+“Ref": "PrivateSubnet"
+}
+}
+},
+"subnetroute2": {
+"Type": "AWS::EC2::SubnetRouteTableAssociation",
+"Properties": {
+"RouteTableId": {
+“Ref": "PrivateRouteTable"
+},
+"SubnetId": {
+“Ref": "SynergyPrivateSubnet"
+}
+}
+},
+"subnetroute4": {
+"Type": "AWS::EC2::SubnetRouteTableAssociation",
+"Properties": {
+"RouteTableId": {
+“Ref": "PublicRouteTable"
+},
+"SubnetId": {
+
+“Ref": "SynergyPublicSubnet"
+}
+}
+},
+"subnetroute5": {
+"Type": "AWS::EC2::SubnetRouteTableAssociation",
+"Properties": {
+"RouteTableId": {
+“Ref": "PublicRouteTable"
+},
+"SubnetId": {
+“Ref": "PublicSubnet"
+}
+}
+},
+"route1": {
+"Type": "AWS::EC2::Route",
+"Properties": {
+"DestinationCidrBlock": "0.0.0.0/0",
+"RouteTableId": {
+“Ref": "PrivateRouteTable"
+},
+"GatewayId": {
+“Ref": "SynergyInternetGateway"
+}
+},
+“DependsOn": "gw1"
+},
+"route2": {
+"Type": "AWS::EC2::Route",
+"Properties": {
+"DestinationCidrBlock": "0.0.0.0/0",
+"RouteTableId": {
+“Ref": "PublicRouteTable"
+},
+"GatewayId": {
+“Ref": "SynergyInternetGateway"
+}
+},
+“DependsOn": "gw1"
+},
+"dchpassoc1": {
+"Type": "AWS::EC2::VPCDHCPOptionsAssociation",
+"Properties": {
+"VpcId": {
+“Ref": "SynergyVPC"
+},
+"DhcpOptionsId": {
+
+“Ref": "SynergyVpcDHCP"
+}
+}
+},
+"ingress1": {
+"Type": "AWS::EC2::SecurityGroupIngress",
+"Properties": {
+"GroupId": {
+“Ref": "sgAllowSSH"
+},
+"IpProtocol": "tcp",
+"FromPort": "22",
+"ToPort": "22",
+“CidrIp": "0.0.0.0/0"
+}
+},
+"ingress2": {
+"Type": "AWS::EC2::SecurityGroupIngress",
+"Properties": {
+"GroupId": {
+“Ref": "sgAllowsHTTPandHTTPS"
+},
+"IpProtocol": "tcp",
+"FromPort": "80",
+"ToPort": "80",
+“CidrIp": "0.0.0.0/0"
+}
+},
+"ingress3": {
+"Type": "AWS::EC2::SecurityGroupIngress",
+"Properties": {
+"GroupId": {
+“Ref": "sgAllowsHTTPandHTTPS"
+},
+"IpProtocol": "tcp",
+"FromPort": "443",
+"ToPort": "443",
+“CidrIp": "0.0.0.0/0"
+}
+},
+"ingress4": {
+"Type": "AWS::EC2::SecurityGroupIngress",
+"Properties": {
+"GroupId": {
+“Ref": "sgSSHandDatabaseSG"
+},
+"IpProtocol": "tcp",
+"FromPort": "22",
+"ToPort": "22",
+“CidrIp": "0.0.0.0/0"
+
+“Ref": "SynergyVpcDHCP"
+}
+}
+},
+"ingress1": {
+"Type": "AWS::EC2::SecurityGroupIngress",
+"Properties": {
+"GroupId": {
+“Ref": "sgAllowSSH"
+},
+"IpProtocol": "tcp",
+"FromPort": "22",
+"ToPort": "22",
+“CidrIp": "0.0.0.0/0"
+}
+},
+"ingress2": {
+"Type": "AWS::EC2::SecurityGroupIngress",
+"Properties": {
+"GroupId": {
+“Ref": "sgAllowsHTTPandHTTPS"
+},
+"IpProtocol": "tcp",
+"FromPort": "80",
+"ToPort": "80",
+“CidrIp": "0.0.0.0/0"
+}
+},
+"ingress3": {
+"Type": "AWS::EC2::SecurityGroupIngress",
+"Properties": {
+"GroupId": {
+“Ref": "sgAllowsHTTPandHTTPS"
+},
+"IpProtocol": "tcp",
+"FromPort": "443",
+"ToPort": "443",
+“CidrIp": "0.0.0.0/0"
+}
+},
+"ingress4": {
+"Type": "AWS::EC2::SecurityGroupIngress",
+"Properties": {
+"GroupId": {
+“Ref": "sgSSHandDatabaseSG"
+},
+"IpProtocol": "tcp",
+"FromPort": "22",
+"ToPort": "22",
+“CidrIp": "0.0.0.0/0"
+
+}
+},
+"ingress5": {
+"Type": "AWS::EC2::SecurityGroupIngress",
+"Properties": {
+"GroupId": {
+“Ref": "sgSSHandDatabaseSG"
+},
+"IpProtocol": "tcp",
+"FromPort": "3306",
+"ToPort": "3306",
+“CidrIp": "0.0.0.0/0"
+}
+},
+"ingress6": {
+"Type": "AWS::EC2::SecurityGroupIngress",
+"Properties": {
+"GroupId": {
+“Ref": "sgdefault"
+},
+"IpProtocol": "-1",
+"SourceSecurityGroupId": {
+“Ref": "sgdefault"
+},
+“SourceSecurityGroupOwnerId": "805746249177"
+}
+},
+"egress1": {
+"Type": "AWS::EC2::SecurityGroupEgress",
+"Properties": {
+"GroupId": {
+“Ref": "sgAllowSSH"
+},
+"IpProtocol": "-1",
+“CidrIp": "0.0.0.0/0"
+}
+},
+"egress2": {
+"Type": "AWS::EC2::SecurityGroupEgress",
+"Properties": {
+"GroupId": {
+“Ref": "sgAllowsHTTPandHTTPS"
+},
+"IpProtocol": "-1",
+“CidrIp": "0.0.0.0/0"
+}
+},
+"egress3": {
+"Type": "AWS::EC2::SecurityGroupEgress",
+"Properties": {
+"GroupId": {
+“Ref": "sgSSHandDatabaseSG"
+
+},
+"IpProtocol": "-1",
+“CidrIp": "0.0.0.0/0"
+}
+},
+"egress4": {
+"Type": "AWS::EC2::SecurityGroupEgress",
+"Properties": {
+"GroupId": {
+“Ref": "sgdefault"
+},
+"IpProtocol": "-1",
+“CidrIp": "0.0.0.0/0"
+}
+}
+},
+"Outputs": {
+"VpcId" : {
+"Description": "The VPC ID",
+"Value" : { "Ref" : "SynergyVPC" }
+},
+"VpcCIDR" : {
+"Description": "The VPC ID",
+"Value": {"Fn::GetAtt": ["SynergyVPC", "CidrBlock"]}
+},
+"PrivateSubnetID": {
+"Description": " PrivateSubnetID",
+"Value": {
+“Ref": "PrivateSubnet"
+}
+},
+"SynergyPrivateSubnetID": {
+"Description": "SynergyPrivateSubnetID",
+"Value": {
+“Ref": "SynergyPrivateSubnet"
+}
+},
+"SynergyPublicSubnetID": {
+"Description": "SynergyPublicSubnetID",
+"Value": {
+“Ref": "SynergyPublicSubnet"
+}
+},
+"PublicSubnetID": 
+{
+"Description": "PublicSubnetID",
+"Value": { "Ref": "PublicSubnet"}
+},
+"WebServer1PublicIP" : {
+"Description": "Public IP of web server 1",
+"Value": { "Fn::Join": ["",["http://",{"Fn::GetAtt": ["WebServer1","PublicIp"]}]]}
+},
+"WebServer2PublicIP" : {
+"Description": "Public IP of web server 2",
+"Value": { "Fn::Join": ["",["http://",{"Fn::GetAtt": ["WebServer2","PublicIp"]}]]}
+},
+"DbServerIP": {
+"Description": "Public IP of Database Server",
+"Value": { "Fn::Join": ["",["http://",{"Fn::GetAtt": ["DbServer","PublicIp"]}]]}
+},
+"ElbOutput": {
+"Description": "DNS to Access Elastic IP",
+"Value": { "Fn::Join": ["",["http://",{"Fn::GetAtt" :["ApplicationLoadBalancerELB" , "DNSName" ]}]]}
+}
+}
+}
